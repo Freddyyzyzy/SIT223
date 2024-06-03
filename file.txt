@@ -21,6 +21,12 @@ pipeline {
             steps {
                 echo 'Performing Security Scan...'
             }
+            post {
+                success{
+                    mail to: "zyan0021@gmail.com",
+                    subject: "Pipeline Succeed",
+                    body: "Pipeline Succeed. See attach logs for details",
+                }
         }
         stage('Deploy to Staging') {
             steps {
@@ -36,17 +42,6 @@ pipeline {
             steps {
                 echo 'Deploying to Production...'
             }
-        }
-    }
-
-    post {
-        always {
-            emailext (
-                to: 'zyan0021@gmail.com',
-                subject: "Pipeline Succeed",
-                body: "Pipeline Succeed. See attach logs for details",
-                attachLog: true
-            )
         }
     }
 }
