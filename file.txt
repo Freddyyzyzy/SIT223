@@ -5,6 +5,8 @@ pipeline {
         DIRECTORY_PATH = "/path/to/code"
         TESTING_ENVIRONMENT = "testing_environment"
         PRODUCTION_ENVIRONMENT = "YourName"
+        EMAIL_RECIPIENT = "zyan0021@gmail.com"
+        LOG_FILE = "stage.log"
     }
     
     stages {
@@ -17,9 +19,34 @@ pipeline {
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo "Stage 2: Unit and Integration Tests - Running unit tests to ensure the code functions as expected and integration tests to ensure the different components work together."
-                echo "Tools: JUnit for unit tests, Selenium for integration tests"
-                // Example commands: sh 'mvn test', sh 'mvn verify'
+                script {
+                    try {
+                        echo "Stage 2: Unit and Integration Tests - Running unit tests to ensure the code functions as expected and integration tests to ensure the different components work together."
+                        echo "Tools: JUnit for unit tests, Selenium for integration tests"
+                        // Example commands: sh 'mvn test', sh 'mvn verify'
+                        currentBuild.result = 'SUCCESS'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        // Save logs
+                        sh "cat /path/to/logs > ${env.LOG_FILE}"
+                    }
+                }
+            }
+            post {
+                success {
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Unit and Integration Tests Success",
+                         body: "Unit and Integration Tests were successful!",
+                         attachmentsPattern: "${env.LOG_FILE}"
+                }
+                failure {
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Unit and Integration Tests Failure",
+                         body: "Unit and Integration Tests failed. Please check the attached logs.",
+                         attachmentsPattern: "${env.LOG_FILE}"
+                }
             }
         }
         stage('Code Analysis') {
@@ -31,9 +58,34 @@ pipeline {
         }
         stage('Security Scan') {
             steps {
-                echo "Stage 4: Security Scan - Performing a security scan on the code to identify any vulnerabilities."
-                echo "Tool: OWASP Dependency Check"
-                // Example command: sh 'dependency-check --project projectName --scan /path/to/code'
+                script {
+                    try {
+                        echo "Stage 4: Security Scan - Performing a security scan on the code to identify any vulnerabilities."
+                        echo "Tool: OWASP Dependency Check"
+                        // Example command: sh 'dependency-check --project projectName --scan /path/to/code'
+                        currentBuild.result = 'SUCCESS'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        // Save logs
+                        sh "cat /path/to/logs > ${env.LOG_FILE}"
+                    }
+                }
+            }
+            post {
+                success {
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Security Scan Success",
+                         body: "Security Scan was successful!",
+                         attachmentsPattern: "${env.LOG_FILE}"
+                }
+                failure {
+                    mail to: "${env.EMAIL_RECIPIENT}",
+                         subject: "Security Scan Failure",
+                         body: "Security Scan failed. Please check the attached logs.",
+                         attachmentsPattern: "${env.LOG_FILE}"
+                }
             }
         }
         stage('Deploy to Staging') {
