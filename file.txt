@@ -23,16 +23,26 @@ pipeline {
             }
             post {
                 success {
-                    mail to: "zyan0021@gmail.com",
-                         subject: "Unit and Integration Tests - Success",
-                         body: "Unit and Integration Tests were successful!"
-                         
+                    script {
+                        def logFile = "unit_integration_tests_success.log"
+                        sh "mvn test > ${logFile}"
+                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
+                        mail to: "zyan0021@gmail.com",
+                             subject: "Unit and Integration Tests - Success",
+                             body: "Unit and Integration Tests were successful!",
+                             attachmentsPattern: logFile
+                    }
                 }
                 failure {
-                    mail to: "zyan0021@gmail.com",
-                         subject: "Unit and Integration Tests - Failure",
-                         body: "Unit and Integration Tests failed. Please check the logs."
-                         
+                    script {
+                        def logFile = "unit_integration_tests_failure.log"
+                        sh "mvn test > ${logFile}"
+                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
+                        mail to: "zyan0021@gmail.com",
+                             subject: "Unit and Integration Tests - Failure",
+                             body: "Unit and Integration Tests failed. Please check the logs.",
+                             attachmentsPattern: logFile
+                    }
                 }
             }
         }
@@ -51,16 +61,26 @@ pipeline {
             }
             post {
                 success {
-                    mail to: "zyan0021@gmail.com",
-                         subject: "Security Scan - Success",
-                         body: "Security Scan was successful!"
-                         
+                    script {
+                        def logFile = "security_scan_success.log"
+                        sh "dependency-check --project projectName --scan ${DIRECTORY_PATH} > ${logFile}"
+                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
+                        mail to: "zyan0021@gmail.com",
+                             subject: "Security Scan - Success",
+                             body: "Security Scan was successful!",
+                             attachmentsPattern: logFile
+                    }
                 }
                 failure {
-                    mail to: "zyan0021@gmail.com",
-                         subject: "Security Scan - Failure",
-                         body: "Security Scan failed. Please check the logs."
-                         
+                    script {
+                        def logFile = "security_scan_failure.log"
+                        sh "dependency-check --project projectName --scan ${DIRECTORY_PATH} > ${logFile}"
+                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
+                        mail to: "zyan0021@gmail.com",
+                             subject: "Security Scan - Failure",
+                             body: "Security Scan failed. Please check the logs.",
+                             attachmentsPattern: logFile
+                    }
                 }
             }
         }
