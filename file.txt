@@ -1,53 +1,100 @@
 pipeline {
     agent any
-    
+
     environment {
-        DIRECTORY_PATH = "/path/to/code"
-        TESTING_ENVIRONMENT = "testing_environment"
-        PRODUCTION_ENVIRONMENT = "YourName"
+        RECIPIENT_EMAIL = 'zyan0021@gmail.com'
     }
-    
+
     stages {
         stage('Build') {
             steps {
-                echo "Fetching the source code from the directory path specified by the environment variable: ${DIRECTORY_PATH}"
-                echo "Compiling the code and generating any necessary artifacts"
-                // Actual build steps would go here
-            }
-            post{
-                success{
-                    mail to: "zyan0021@gmail.com",
-                    subject: "Build Status Email",
-                    body: "Build was successful!"
+                script {
+                    echo 'Building the code using Maven...'
+                    sh 'mvn clean package'
                 }
             }
-	
         }
-        stage('Test') {
+
+        stage('Unit and Integration Tests') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                script {
+                    echo 'Running unit and integration tests...'
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    script {
+                        def status = currentBuild.currentResult
+                        def log = "${env.WORKSPACE}/unit_tests.log"
+                        sh "mvn test > ${log}"
+                        emailext subject: "Unit and Integration Tests: ${status}",
+                                 body: "The Unit and Integration Tests stage has ${status}.",
+                                 attachLog: true,
+                                 to: "${env.RECIPIENT_EMAIL}"
+                    }
+                }
             }
         }
-        stage('Code Quality Check') {
+
+        stage('Code Analysis') {
             steps {
-                echo "Checking the quality of the code"
+                script {
+                    echo 'Analyzing code with SonarQube...'
+                    sh 'mvn sonar:sonar'
+                }
             }
         }
-        stage('Deploy') {
+
+        stage('Security Scan') {
             steps {
-                echo "Deploying the application to a testing environment specified by the environment variable: ${TESTING_ENVIRONMENT}"
+                script {
+                    echo 'Running security scan with OWASP Dependency-Check...'
+                    sh 'mvn dependency-check:check'
+                }
+            }
+            post {
+                always {
+                    script {
+                        def status = currentBuild.currentResult
+                        def log = "${env.WORKSPACE}/security_scan.log"
+                        sh "mvn dependency-check:check > ${log}"
+                        emailext subject: "Security Scan: ${status}",
+                                 body: "The Security Scan stage has ${status}.",
+                                 attachLog: true,
+                                 to: "${env.RECIPIENT_EMAIL}"
+                    }
+                }
             }
         }
-        stage('Approval') {
+
+        stage('Deploy to Staging') {
             steps {
-                echo "Waiting for manual approval..."
-                sleep time: 10, unit: 'SECONDS'
+                script {
+                    echo 'Deploying to staging server...'
+                    
+                    sh './deploy_to_staging.sh'
+                }
             }
         }
+
+        stage('Integration Tests on Staging') {
+            steps {
+                script {
+                    echo 'Running integration tests on staging...'
+                   
+                    sh './run_selenium_tests.sh'
+                }
+            }
+        }
+
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment ${PRODUCTION_ENVIRONMENT}"
+                script {
+                    echo 'Deploying to production server...'
+                   
+                    sh './deploy_to_production.sh'
+                }
             }
         }
     }
