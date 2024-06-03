@@ -1,101 +1,66 @@
 pipeline {
     agent any
 
-    environment {
-        RECIPIENT_EMAIL = 'zyan0021@gmail.com'
-    }
-
     stages {
         stage('Build') {
             steps {
-                script {
-                    echo 'Building the code using Maven...'
-                    sh 'mvn clean package'
-                }
+                echo 'Building...'
+                // Example tool: Maven
+                sh 'mvn clean package'
             }
         }
-
         stage('Unit and Integration Tests') {
             steps {
-                script {
-                    echo 'Running unit and integration tests...'
-                    sh 'mvn test'
-                }
-            }
-            post {
-                always {
-                    script {
-                        def status = currentBuild.currentResult
-                        def log = "${env.WORKSPACE}/unit_tests.log"
-                        sh "mvn test > ${log}"
-                        emailext subject: "Unit and Integration Tests: ${status}",
-                                 body: "The Unit and Integration Tests stage has ${status}.",
-                                 attachLog: true,
-                                 to: "${env.RECIPIENT_EMAIL}"
-                    }
-                }
+                echo 'Running Unit and Integration Tests...'
+                // Example tools: JUnit for unit tests, Selenium for integration tests
+                sh 'mvn test'
             }
         }
-
         stage('Code Analysis') {
             steps {
-                script {
-                    echo 'Analyzing code with SonarQube...'
-                    sh 'mvn sonar:sonar'
-                }
+                echo 'Performing Code Analysis...'
+                // Example tool: SonarQube
+                sh 'sonar-scanner'
             }
         }
-
         stage('Security Scan') {
             steps {
-                script {
-                    echo 'Running security scan with OWASP Dependency-Check...'
-                    sh 'mvn dependency-check:check'
-                }
-            }
-            post {
-                always {
-                    script {
-                        def status = currentBuild.currentResult
-                        def log = "${env.WORKSPACE}/security_scan.log"
-                        sh "mvn dependency-check:check > ${log}"
-                        emailext subject: "Security Scan: ${status}",
-                                 body: "The Security Scan stage has ${status}.",
-                                 attachLog: true,
-                                 to: "${env.RECIPIENT_EMAIL}"
-                    }
-                }
+                echo 'Performing Security Scan...'
+                // Example tool: OWASP ZAP
+                sh 'zap-cli start'
             }
         }
-
         stage('Deploy to Staging') {
             steps {
-                script {
-                    echo 'Deploying to staging server...'
-                    
-                    sh './deploy_to_staging.sh'
-                }
+                echo 'Deploying to Staging...'
+                // Example tool: AWS CLI
+                sh 'aws deploy create-deployment --application-name MyApp --deployment-group-name MyAppStaging --s3-location bucket=my-bucket,key=my-app.zip,bundleType=zip'
             }
         }
-
         stage('Integration Tests on Staging') {
             steps {
-                script {
-                    echo 'Running integration tests on staging...'
-                   
-                    sh './run_selenium_tests.sh'
-                }
+                echo 'Running Integration Tests on Staging...'
+                // Example tool: Selenium
+                sh 'selenium-side-runner my-tests.side'
             }
         }
-
         stage('Deploy to Production') {
             steps {
-                script {
-                    echo 'Deploying to production server...'
-                   
-                    sh './deploy_to_production.sh'
-                }
+                echo 'Deploying to Production...'
+                // Example tool: AWS CLI
+                sh 'aws deploy create-deployment --application-name MyApp --deployment-group-name MyAppProd --s3-location bucket=my-bucket,key=my-app.zip,bundleType=zip'
             }
+        }
+    }
+
+    post {
+        always {
+            emailext (
+                to: 'zyan0021@gmail.com',
+                subject: "Pipeline ${currentBuild.fullDisplayName}",
+                body: "Pipeline ${currentBuild.fullDisplayName} finished with status: ${currentBuild.currentResult}",
+                attachLog: true
+            )
         }
     }
 }
