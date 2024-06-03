@@ -14,6 +14,14 @@ pipeline {
                 echo "Compiling the code and generating any necessary artifacts"
                 // Actual build steps would go here
             }
+            post{
+                success{
+                    mail to: "zyan0021@gmail.com",
+                    subject: "Build Status Email",
+                    body: "Build was successful!"
+                }
+            }
+	
         }
         stage('Test') {
             steps {
