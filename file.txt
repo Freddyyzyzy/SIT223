@@ -1,108 +1,104 @@
 pipeline {
     agent any
-    
-    environment {
-        DIRECTORY_PATH = "/path/to/code"
-        TESTING_ENVIRONMENT = "testing_environment"
-        PRODUCTION_ENVIRONMENT = "YourName"
-    }
-    
     stages {
         stage('Build') {
             steps {
-                echo "Stage 1: Build - Building the code using Maven to compile and package the code."
-                echo "Tool: Maven"
-                // Example command: sh 'mvn clean package'
+                echo 'Build the code using Maven.' // Reference: Maven is a popular build automation tool for Java projects.
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                echo "Stage 2: Unit and Integration Tests - Running unit tests to ensure the code functions as expected and integration tests to ensure the different components work together."
-                echo "Tools: JUnit for unit tests, Selenium for integration tests"
-                // Example commands: sh 'mvn test', sh 'mvn verify'
+                echo 'Run unit tests using JUnit.' // Reference: JUnit is a widely used unit testing framework for Java applications.
+                echo 'Run integration tests using Selenium.' // Reference: Selenium is a tool for automating web browser testing.
             }
             post {
                 success {
-                    script {
-                        def logFile = "unit_integration_tests_success.log"
-                        sh "mvn test > ${logFile}"
-                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
-                        mail to: "zyan0021@gmail.com",
-                             subject: "Unit and Integration Tests - Success",
-                             body: "Unit and Integration Tests were successful!",
-                             attachmentsPattern: logFile
-                    }
+                    emailext mimeType: 'text/html',
+                             attachLog: true,
+                             
+                             subject: "Unit and Integration Tests Passed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             to: 'zyan002@gmail.com',
+                             body: '''<html>
+                                        <body>
+                                            <h2 style="color: green;">Pipeline Succeeded</h2>
+                                            <p style="color: navy;"><strong>Unit and Integration Tests Passed</strong></p>
+                                            <p>The unit and integration tests have passed successfully.</p>
+                                            <p>You can view the build log <a href="${BUILD_URL}console">${BUILD_URL}console</a>.</p>
+                                        </body>
+                                      </html>'''
                 }
                 failure {
-                    script {
-                        def logFile = "unit_integration_tests_failure.log"
-                        sh "mvn test > ${logFile}"
-                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
-                        mail to: "zyan0021@gmail.com",
-                             subject: "Unit and Integration Tests - Failure",
-                             body: "Unit and Integration Tests failed. Please check the logs.",
-                             attachmentsPattern: logFile
-                    }
+                    emailext mimeType: 'text/html',
+                             attachLog: true,
+                             
+                             subject: "Unit and Integration Tests Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             to: 'zyan002@gmail.com',
+                             body: '''<html>
+                                        <body>
+                                            <h2 style="color: red;">Pipeline Failed</h2>
+                                            <p style="color: navy;"><strong>Unit and Integration Tests Failed</strong></p>
+                                            <p>The unit and integration tests have failed.</p>
+                                            <p>You can view the build log <a href="${BUILD_URL}console">${BUILD_URL}console</a>.</p>
+                                        </body>
+                                      </html>'''
                 }
             }
         }
         stage('Code Analysis') {
             steps {
-                echo "Stage 3: Code Analysis - Analyzing the code to ensure it meets industry standards."
-                echo "Tool: SonarQube"
-                // Example command: sh 'mvn sonar:sonar'
+                echo 'Integrate SonarQube for code analysis.' // Reference: SonarQube is a static code analysis tool that detects bugs, vulnerabilities, and code smells in your codebase.
             }
         }
         stage('Security Scan') {
             steps {
-                echo "Stage 4: Security Scan - Performing a security scan on the code to identify any vulnerabilities."
-                echo "Tool: OWASP Dependency Check"
-                // Example command: sh 'dependency-check --project projectName --scan /path/to/code'
+                echo 'Perform security scan using OWASP ZAP.' // Reference: OWASP ZAP (Zed Attack Proxy) is a security tool for finding vulnerabilities in web applications.
             }
             post {
                 success {
-                    script {
-                        def logFile = "security_scan_success.log"
-                        sh "dependency-check --project projectName --scan ${DIRECTORY_PATH} > ${logFile}"
-                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
-                        mail to: "zyan0021@gmail.com",
-                             subject: "Security Scan - Success",
-                             body: "Security Scan was successful!",
-                             attachmentsPattern: logFile
-                    }
+                    emailext mimeType: 'text/html',
+                             attachLog: true,
+                             
+                             subject: "Security Scan Passed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             to: 'zyan002@gmail.com',
+                             body: '''<html>
+                                        <body>
+                                            <h2 style="color: green;">Pipeline Succeeded</h2>
+                                            <p style="color: navy;"><strong>Security Scan Passed</strong></p>
+                                            <p>The security scan has passed successfully.</p>
+                                            <p>You can view the build log <a href="${BUILD_URL}console">${BUILD_URL}console</a>.</p>
+                                        </body>
+                                      </html>'''
                 }
                 failure {
-                    script {
-                        def logFile = "security_scan_failure.log"
-                        sh "dependency-check --project projectName --scan ${DIRECTORY_PATH} > ${logFile}"
-                        archiveArtifacts artifacts: logFile, allowEmptyArchive: true
-                        mail to: "zyan0021@gmail.com",
-                             subject: "Security Scan - Failure",
-                             body: "Security Scan failed. Please check the logs.",
-                             attachmentsPattern: logFile
-                    }
+                    emailext mimeType: 'text/html',
+                             attachLog: true,
+                             
+                             subject: "Security Scan Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                             to: 'zyan002@gmail.com',
+                             body: '''<html>
+                                        <body>
+                                            <h2 style="color: red;">Pipeline Failed</h2>
+                                            <p style="color: navy;"><strong>Security Scan Failed</strong></p>
+                                            <p>The security scan has failed.</p>
+                                            <p>You can view the build log <a href="${BUILD_URL}console">${BUILD_URL}console</a>.</p>
+                                        </body>
+                                      </html>'''
                 }
             }
         }
         stage('Deploy to Staging') {
             steps {
-                echo "Stage 5: Deploy to Staging - Deploying the application to a staging server."
-                echo "Tool: AWS CLI"
-                // Example command: sh 'aws s3 cp target/my-app.jar s3://my-staging-bucket/'
+                echo 'Deploy application to AWS EC2 staging instance.' // Reference: AWS EC2 is a popular cloud computing service for deploying applications.
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                echo "Stage 6: Integration Tests on Staging - Running integration tests on the staging environment to ensure the application functions as expected."
-                echo "Tool: Selenium"
-                // Example command: sh 'mvn verify -Dtest=StagingIntegrationTest'
+                echo 'Run integration tests on staging environment.' // Reference: Integration tests on a staging environment ensure the application behaves as expected in a production-like setting.
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo "Stage 7: Deploy to Production - Deploying the application to a production server."
-                echo "Tool: AWS CLI"
-                // Example command: sh 'aws s3 cp target/my-app.jar s3://my-production-bucket/'
+                echo 'Deploy application to AWS EC2 production instance.' // Reference: Deployment to production is the final step in the pipeline, making the application available to users.
             }
         }
     }
