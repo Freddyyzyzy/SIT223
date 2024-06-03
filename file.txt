@@ -10,43 +10,51 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo "Fetching the source code from the directory path specified by the environment variable: ${DIRECTORY_PATH}"
-                echo "Compiling the code and generating any necessary artifacts"
-                // Actual build steps would go here
-            }
-            post{
-                success{
-                    mail to: "zyan0021@gmail.com",
-                    subject: "Build Status Email",
-                    body: "Build was successful!"
-                }
+                echo "Stage 1: Build - Building the code using Maven to compile and package the code."
+                echo "Tool: Maven"
+                // Example command: sh 'mvn clean package'
             }
         }
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                echo "Stage 2: Unit and Integration Tests - Running unit tests to ensure the code functions as expected and integration tests to ensure the different components work together."
+                echo "Tools: JUnit for unit tests, Selenium for integration tests"
+                // Example commands: sh 'mvn test', sh 'mvn verify'
             }
         }
-        stage('Code Quality Check') {
+        stage('Code Analysis') {
             steps {
-                echo "Checking the quality of the code"
+                echo "Stage 3: Code Analysis - Analyzing the code to ensure it meets industry standards."
+                echo "Tool: SonarQube"
+                // Example command: sh 'mvn sonar:sonar'
             }
         }
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo "Deploying the application to a testing environment specified by the environment variable: ${TESTING_ENVIRONMENT}"
+                echo "Stage 4: Security Scan - Performing a security scan on the code to identify any vulnerabilities."
+                echo "Tool: OWASP Dependency Check"
+                // Example command: sh 'dependency-check --project projectName --scan /path/to/code'
             }
         }
-        stage('Approval') {
+        stage('Deploy to Staging') {
             steps {
-                echo "Waiting for manual approval..."
-                sleep time: 10, unit: 'SECONDS'
+                echo "Stage 5: Deploy to Staging - Deploying the application to a staging server."
+                echo "Tool: AWS CLI"
+                // Example command: sh 'aws s3 cp target/my-app.jar s3://my-staging-bucket/'
+            }
+        }
+        stage('Integration Tests on Staging') {
+            steps {
+                echo "Stage 6: Integration Tests on Staging - Running integration tests on the staging environment to ensure the application functions as expected."
+                echo "Tool: Selenium"
+                // Example command: sh 'mvn verify -Dtest=StagingIntegrationTest'
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment ${PRODUCTION_ENVIRONMENT}"
+                echo "Stage 7: Deploy to Production - Deploying the application to a production server."
+                echo "Tool: AWS CLI"
+                // Example command: sh 'aws s3 cp target/my-app.jar s3://my-production-bucket/'
             }
         }
     }
