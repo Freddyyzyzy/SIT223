@@ -43,8 +43,8 @@ pipeline {
         always {
             emailext (
                 to: 'zyan0021@gmail.com',
-                subject: "Pipeline ${currentBuild.fullDisplayName}",
-                body: "Pipeline ${currentBuild.fullDisplayName} finished with status: ${currentBuild.currentResult}",
+                subject: "Pipeline Succeed",
+                body: "Pipeline Succeed. See attach logs for details",
                 attachLog: true
             )
         }
